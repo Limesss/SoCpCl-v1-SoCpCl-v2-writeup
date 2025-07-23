@@ -2,7 +2,7 @@ Foreword
 Originally, the challenge only had v1. However, after the challenge was released, the vulnerability author publicly released a detailed write-up (WP) for it. 
 <p> So we urgently added a "SoCpCl v2" challenge. V2 primarily adds a gap memory bypass on top of v1. V2 is another exploit method I discovered while reproducing the vulnerability. 
 <p> Of course, by the time I saw the author's WP, I had almost no time to verify if the exploit in the blog could be directly used. However, after my brief testing, it didn't run successfully. Therefore, I cannot completely rule out all unintended solutions here.
-<p> refer: [Author Link](https://anatomi.st/blog/2025_06_27_pwning_solana_for_fun_and_profit)
+refer: [Author Link](https://anatomi.st/blog/2025_06_27_pwning_solana_for_fun_and_profit)
 
 ## SoCpCl v1
 The specific vulnerability analysis is already very clear in the author's linked article. 
