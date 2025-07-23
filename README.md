@@ -27,7 +27,7 @@ fn update_caller_account(
 ```
 Before we proceed, let's first clarify the relationship between vm_data_addr and host_addr within a region. This explanation is excerpted from a presentation.
 The image on the left shows two MemoryRegions. [image FROM ppt](https://www.hexacon.fr/slides/Ginoah-pwning_blockchain_for_fun_and_profit.pdf)
-![](/img/1.jpg)
+![](/img/image.png)
 
 
 
