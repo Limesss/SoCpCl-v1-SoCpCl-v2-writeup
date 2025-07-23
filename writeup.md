@@ -1,5 +1,6 @@
 The specific vulnerability analysis is already very clear in the author's linked article. Here, I'll just explain the solutions for these two challenges.
 The vulnerability primarily stems from an issue during the update of caller_account. If the mapping corresponding to caller_account's vm_data_addr is inconsistent with the data_ptr corresponding to callee_account, the host for vm_data_addr will be set to data_ptr.
+```rust
 fn update_caller_account(
     invoke_context: &InvokeContext,
     memory_mapping: &MemoryMapping,
@@ -15,10 +16,12 @@ fn update_caller_account(
             region.host_addr.set(callee_ptr);
         }
     }
+```
 Before we proceed, let's first clarify the relationship between vm_data_addr and host_addr within a region. This explanation is excerpted from a presentation.
 The image on the left shows two MemoryRegions.
 The VM Memory on the right represents the VM created by the validator during process_instruction. Host Memory indicates where data is read from or written to within the validator when performing read/write operations on VM Memory. We can normally read from and write to VM Memory directly, but we can only read from and write to Host Memory through VM Memory.
 The caller_account is obtained from accounts, meaning the account_info corresponding to these accounts is retrieved from the caller's VM Memory, which we can directly modify. In contrast, callee_account is one of the borrowed instruction_accounts. It originally exists in Host Memory and cannot be directly modified via the contract.
+```rust
 let mut accounts = S::translate_accounts(
         &instruction_accounts,
         &program_indices,
@@ -46,7 +49,9 @@ let mut accounts = S::translate_accounts(
             )?;
         }
     }
+```
 So, the goal is clear: we can use update_caller_account to modify the Host_addr that a vm_data_addr maps to.
+```rust
 fn update_caller_account(
     invoke_context: &InvokeContext,
     memory_mapping: &MemoryMapping,
@@ -62,14 +67,18 @@ fn update_caller_account(
             region.host_addr.set(callee_ptr);
         }
     }
-SoCpCl v2
+```rust
+## SoCpCl v2
+```diff
 - let is_loader_deprecated = *instruction_context
 -        .try_borrow_last_program_account(transaction_context)?
 -        .get_owner()
 + let is_loader_deprecated = false;
+```
 Here's the main point: in newer versions of Solana, is_loader_deprecated defaults to false. So, this patch serves as a reminder.
 Next, we just need to see which parts of the code are affected by changes to is_loader_deprecated.
 Ultimately, it's used in from_account_info, primarily influencing the length selection when translating serialized_data. When is_loader_deprecated is false, the length used is MAX_PERMITTED_DATA_INCREASE, which is 0x2800. We need to ensure that when vm_data_addr.saturating_add(original_data_len as u64) is translated to host_addr, it does not fall into gap memory. This is why a different exploit method is used here. For details, please refer to the exploit (Exp).
+```rust
 fn from_account_info(
     invoke_context: &InvokeContext,
     memory_mapping: &MemoryMapping,
@@ -106,3 +115,4 @@ fn from_account_info(
     serialized_len_ptr,
 )
     };
+```rust
